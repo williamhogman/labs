@@ -1,0 +1,4 @@
+---
+name: "grammarly/omniconf"
+---
+# omniconf

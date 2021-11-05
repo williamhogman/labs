@@ -1,0 +1,109 @@
+#![feature(box_patterns)]
+
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+enum Alphabet {
+  X,
+  Y,
+  Z,
+}
+
+#[derive(Debug, Clone)]
+enum Expr<'arena> {
+    Tectum,
+    Falsum,
+    Variable(Alphabet),
+    And(&'arena Expr<'arena>, &'arena Expr<'arena>),
+    Or(&'arena Expr<'arena>, &'arena Expr<'arena>),
+    Not(&'arena Expr<'arena>),
+}
+
+use self::Alphabet::*;
+use self::Expr::*;
+
+macro_rules! logic {
+    (And($x:tt, $y:tt)) => {
+        And(Box::new(logic!($x)), Box::new(logic!($y)))
+    };
+    (Or($x:tt, $y:tt)) => {
+        And(Box::new(logic!($x)), Box::new(logic!($y)))
+    };
+    (Not($x:tt)) => {
+        Not(Box::new(logic!($x)))
+    };
+    ($x:ident) => {
+        Variable($x)
+    };
+}
+
+
+impl PartialEq for Expr {
+    fn eq(&self, other: &Self) -> bool {
+       match (self, other) {
+        (Or(x, y), Or(a, b)) => x == a && y == b,
+        (And(x, y), And(a, b)) => x == a && y == b,
+        (Not(x), Not(y)) => x == y,
+        (Tectum, Tectum) => true,
+        (Falsum, Falsum) => true,
+        (Variable(a), Variable(b)) => a == b,
+        _ => false,
+       }
+    }
+}
+
+impl Eq for Expr {}
+
+impl Expr {
+    fn simplify(self) -> Expr {
+        match self {
+            And(x, y) if x == y => x,
+            Or(x, y) if x == y => x,
+            Not(box Not(x)) => x,
+            And(x, y) => And(x.simplify(), y.simplify()),
+            Or(x, y) => Or(x.simplify(), y.simplify()),
+            _ => self
+        }
+    }
+
+
+    fn demorgan(self) -> Expr {
+        let mut stable = false;
+        let mut current = self.demorgan_recursively();
+        while !stable {
+            let next = current.clone().demorgan_recursively();
+            stable = next == current;
+            current = next;
+        }
+        return current
+    }
+
+    fn demorgan_recursively(self) -> Box<Expr> {
+        match self {
+            Not(And(x, y)) => Or((Not(x.demorgan_recursively().simplify())), (Not(y.demorgan_recursively().simplify()))),
+            Not(Or(x, y)) => And((Not(x.demorgan_recursively().simplify())), (Not(y.demorgan_recursively().simplify()))),
+            And(x, y) => And(x.demorgan_recursively().simplify(), y.demorgan_recursively().simplify()),
+            Or(x, y) => Or(x.demorgan_recursively().simplify(), y.demorgan_recursively().simplify()),
+            _ => self
+        }
+    }
+
+    fn distributed_or(self) -> Box<Expr> {
+        if let Or(p, box And(q, r)) = self {
+            Box::new(And(
+                Box::new(Or(p.clone().distributed_or(), q.distributed_or())),
+                Box::new(Or(p.distributed_or(), r.distributed_or()))
+            ))
+        } else if let And(p, q) = self {
+            Box::new(And(p.distributed_or(), q.distributed_or()))
+        } else {
+            return Box::new(self)
+        }
+    }
+}
+
+fn main() {
+    let foo = logic!{
+        And(X, Y)
+    };
+    let simp = foo.clone().demorgan().distributed_or();
+    print!("foo = {:?} simp = {:?}", foo, simp);
+}

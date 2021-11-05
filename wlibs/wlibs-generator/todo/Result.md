@@ -1,0 +1,4 @@
+---
+name: "kittinunf/Result"
+---
+# Result

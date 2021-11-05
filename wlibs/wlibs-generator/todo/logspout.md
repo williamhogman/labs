@@ -1,0 +1,4 @@
+---
+name: "gliderlabs/logspout"
+---
+# logspout

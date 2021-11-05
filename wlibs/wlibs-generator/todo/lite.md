@@ -1,0 +1,4 @@
+---
+name: "splitsh/lite"
+---
+# lite

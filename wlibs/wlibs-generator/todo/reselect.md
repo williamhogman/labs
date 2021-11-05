@@ -1,0 +1,4 @@
+---
+name: "reduxjs/reselect"
+---
+# reselect

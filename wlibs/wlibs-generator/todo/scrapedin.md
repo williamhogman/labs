@@ -1,0 +1,4 @@
+---
+name: "linkedtales/scrapedin"
+---
+# scrapedin

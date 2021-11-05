@@ -1,0 +1,4 @@
+---
+name: "funcool/buddy"
+---
+# buddy

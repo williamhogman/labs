@@ -1,0 +1,4 @@
+---
+name: "gocardless/ibandit"
+---
+# ibandit

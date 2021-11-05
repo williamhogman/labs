@@ -1,0 +1,4 @@
+---
+name: "jaraco/path"
+---
+# path

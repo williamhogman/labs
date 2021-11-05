@@ -1,0 +1,4 @@
+---
+name: "chrislusf/seaweedfs"
+---
+# seaweedfs

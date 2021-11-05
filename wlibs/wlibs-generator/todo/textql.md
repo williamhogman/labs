@@ -1,0 +1,4 @@
+---
+name: "dinedal/textql"
+---
+# textql
